@@ -3,10 +3,10 @@ from util import cleaning_dataset,projects_ranking,stable_matching_algorithm_unb
 import random
 import pandas as pd
 import numpy as np
-#import matplotlib.pyplot as plt
-#import seaborn as sns 
+import matplotlib.pyplot as plt
+import seaborn as sns 
 st.title("Projects Attribution")
-st.header("Based on mariage lemma ")
+st.header("Based on mariage lemma")
 
 uploaded_file = st.file_uploader("please drag and drop the csv file here :",type='csv')
 if uploaded_file is not None:
@@ -63,8 +63,8 @@ if uploaded_file is not None:
         st.write("Is it a good matching ? Analyzing the distribution of student's vows :")
 
       
-        #fig = plt.figure()
-        #sns.histplot(evaluate_satisfaction( student_vows ,attributions))
-        #plt.title("Histogram of the ranking of final projects attributions (0 = first vow, 5= last vow ")
-        #st.pyplot(fig)
+        fig = plt.figure()
+        sns.histplot(evaluate_satisfaction( student_vows ,attributions))
+        plt.title("Histogram of the ranking of final projects attributions (0 = first vow, 5= last vow ")
+        st.pyplot(fig)
 
