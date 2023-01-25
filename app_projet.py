@@ -1,11 +1,11 @@
 import streamlit as st 
-from util import *
+from util import cleaning_dataset,projects_ranking,stable_matching_algorithm_unbalanced_class,evaluate_satisfaction
 import random
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns 
-st.title("Porjects Attribution")
+#import matplotlib.pyplot as plt
+#import seaborn as sns 
+st.title("Projects Attribution")
 st.header("Based on mariage lemma ")
 
 uploaded_file = st.file_uploader("please drag and drop the csv file here :",type='csv')
@@ -33,7 +33,7 @@ if uploaded_file is not None:
     st.write(email_list )
     df_clean = cleaning_dataset(df)
     st.write("The students' names are :")
-    st.write(df_clean[["Nom","Prénom"]].drop_duplicates().reset_index(drop=True))
+    st.write(df_clean[["Nom","Prénom"]].reset_index(drop=True))
     
 
     st.write("The projects to be allocated are :")
@@ -61,8 +61,10 @@ if uploaded_file is not None:
         attributions = stable_matching_algorithm_unbalanced_class(student_vows,vows_projects,places)
         st.write("the final attributions are :", attributions)
         st.write("Is it a good matching ? Analyzing the distribution of student's vows :")
-        fig = plt.figure()
-        sns.histplot(evaluate_satisfaction( student_vows ,attributions))
-        plt.title("Histogram of the ranking of final projects attributions (0 = first vow, 5= last vow ")
-        st.pyplot(fig)
+
+      
+        #fig = plt.figure()
+        #sns.histplot(evaluate_satisfaction( student_vows ,attributions))
+        #plt.title("Histogram of the ranking of final projects attributions (0 = first vow, 5= last vow ")
+        #st.pyplot(fig)
 
