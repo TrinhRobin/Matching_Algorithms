@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns 
+import re
 st.title("Projects Attribution")
 st.header("Based on mariage lemma")
 
@@ -32,14 +33,13 @@ if uploaded_file is not None:
     email_list = st.text_input("Do you want to apply a filter based on email adresses?")
     st.write(email_list )
     df_clean = cleaning_dataset(df)
+    number_of_vows = len(re.findall(r"Choix[0-9]{1}", ' '.join(list(df_clean.columns) )))//2
     st.write("The students' names are :")
     st.write(df_clean[["Nom","Prénom"]].reset_index(drop=True))
     
 
     st.write("The projects to be allocated are :")
-    unique_projects = np.unique(np.concatenate([df_clean["Choix1"].unique(),
-                                        df_clean["Choix2"].unique(),
-                                        df_clean["Choix3"].unique()]))
+    unique_projects = np.unique(np.concatenate([df_clean[f"Choix{i}"].unique() for i in range(number_of_vows)]))
     st.write(unique_projects)
 
     st.write("Congratulations ! Now let's the matching begins !")
@@ -48,7 +48,9 @@ if uploaded_file is not None:
         places[proj] = st.number_input(f'number of places for Project {proj} ',0,5,1)
         
   
-    student_vows = {df_clean.loc[i,"Nom"]+'_'+df_clean.loc[i,"Prénom"]: [df_clean.loc[i,f'Choix{j}'] for j in range(1,4) ] for i in df_clean.index}
+    student_vows = {df_clean.loc[i,"Nom"]+'_'+df_clean.loc[i,"Prénom"]: [df_clean.loc[i,f'Choix{j}'] for j in range(number_of_vows) ] for i in df_clean.index}
+
+    
     st.write( "Those are the student' vows:",student_vows)
     vows_projects=projects_ranking(df_clean,unique_projects)
     st.write("And on the opposite side, the projects' vows:",vows_projects)
@@ -64,7 +66,12 @@ if uploaded_file is not None:
 
       
         fig = plt.figure()
-        sns.histplot(evaluate_satisfaction( student_vows ,attributions))
+        plt.hist(evaluate_satisfaction( student_vows ,attributions))
         plt.title("Histogram of the ranking of final projects attributions (0 = first vow, 5= last vow ")
         st.pyplot(fig)
+         
+        #st.write(evaluate_satisfaction( student_vows ,attributions))
+       # fig = plt.figure()
+        #plt.pie(evaluate_satisfaction( student_vows ,attributions), autopct='%.0f%%')
+        #st.pyplot(fig)
 

@@ -1,7 +1,7 @@
 import random
 import pandas as pd
 import numpy as np
-
+import re
 def fill_all_student_projects(list_students_projects,
                               list_all_students,
                               method_ranking ):
@@ -13,32 +13,39 @@ def fill_all_projects(student_vows,
                               method_ranking ):
     project_queue = sorted([y for y in list_all_projects if y not in student_vows], key=lambda k: method_ranking(k))
     return(student_vows+project_queue)
-    
+
 def cleaning_dataset(df,list_mails=[]):
     df_clean =df.drop_duplicates(subset=['Nom','Prénom'],keep='last')
     df_clean =  df_clean.dropna()
-    df_clean.columns = ['Horodateur', 'Nom', 'Prénom', 'Adresse_Mail','Choix1','Raison_Choix1','Choix2','Raison_Choix2',
-                   'Choix3','Equipe','OS','Memoire','Github','Last']
+    #using regex to find number of vows :
+    number_of_vows = len(re.findall(r"Donnez votre [a-z\é\è\à\ù]{1,15} choix de projet", ' '.join(list(df_clean.columns) )))
+    
+    df_clean = df_clean[list(df_clean.columns[:(3+2*number_of_vows+1)])+\
+                       ["Quel système d'exploitation utilisez-vous pour travailler?",
+                        "Combien de GB de mémoire RAM disposez-vous?",
+                        "Quel est votre niveau d'aisance avec git/github?"]]
+   
+    df_clean.columns = ['Horodateur', 'Nom', 'Prénom', 'Adresse_Mail' ]+\
+                        [y for x in range(number_of_vows)for y in [f'Choix{x}',f'Raison_Choix{x}']]+\
+                   ['OS','Memoire','Github']
     #filtre adresse mail
     if list_mails: 
         print("Filtre activé")
         df_clean=df_clean[df_clean['Adresse_Mail'].isin(list_mails)]
     return df_clean
-    
+
 def projects_ranking(df,list_projects, 
                      method_class1=len,method_class2= lambda x : random.random()):
-   
-    
     #A mettre en paramètre ? avec webscrapping
     list_all_students  = set([ x[0] +"_"+x[1] for x in df.loc[:,["Nom","Prénom"]].values])
-    df['score1']=df["Raison_Choix1"].apply(lambda x : method_class1(x))
-    df['score2']=df["Raison_Choix2"].apply(lambda x : method_class1(x))
+    number_of_vows = len(re.findall(r"Choix[0-9]{1}", ' '.join(list(df.columns) )))//2
+    for i in range(number_of_vows):
+        df[f'score{i}']=df[f"Raison_Choix{i}"].apply(lambda x : method_class1(x))
     
     
     vows_projects = {project :[ x[0]+'_'+x[1] 
-          for x in df.loc[df["Choix1"]==project,].sort_values(by='score1',ascending=False).loc[:,["Nom","Prénom"]].values]+
-                     [ x[0]+'_'+x[1] 
-          for x in df.loc[df["Choix2"]==project,].sort_values(by='score2',ascending=False).loc[:,["Nom","Prénom"]].values] 
+          for i in range(  number_of_vows) for x in df.loc[df[f"Choix{i}"]==project,].sort_values(by=f'score{i}',ascending=False).loc[:,["Nom","Prénom"]].values
+                     ]
                      for project in  list_projects}
     return({ project : fill_all_student_projects(vows_projects[project], list_all_students,method_class2) for project in vows_projects})
     
