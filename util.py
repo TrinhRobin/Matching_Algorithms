@@ -16,23 +16,32 @@ def fill_all_projects(student_vows,
 
 def cleaning_dataset(df,list_mails=[]):
     df_clean =df.drop_duplicates(subset=['Nom','Prénom'],keep='last')
-    df_clean =  df_clean.dropna()
+    #Dropping out the rows without name/surname/email adresses 
+    df_clean =  df_clean.dropna(subset=['Nom','Prénom','Adresse Mail'])
     #using regex to find number of vows :
     number_of_vows = len(re.findall(r"Donnez votre [a-z\é\è\à\ù]{1,15} choix de projet", ' '.join(list(df_clean.columns) )))
+    #Wrong formating so that i neeed to reorder that :(
+    df_clean_res = df_clean[list(df_clean.columns[:(3+2*number_of_vows+1)])]
+    ##Filling out Empty Projects/reasons :
+    df_clean_res=df_clean_res.fillna("No") 
+    df_clean_res.columns = ['Horodateur', 'Nom', 'Prénom', 'Adresse_Mail' ]+\
+                        [y for x in range(number_of_vows)for y in [f'Choix{x}',f'Raison_Choix{x}']]
+    #using regex to dteect if theses keywords are in the columns : 
+    num_column_github = [i for i,x in enumerate(list(df_clean.columns)) if re.search('github',x)][0]
+    num_column_os = [i for i,x in enumerate(list(df_clean.columns)) if re.search("système d'exploitation",x)][0]
+    num_column_ram= [i for i,x in enumerate(list(df_clean.columns)) if re.search('RAM',x)][0]
     
-    df_clean = df_clean[list(df_clean.columns[:(3+2*number_of_vows+1)])+\
-                       ["Quel système d'exploitation utilisez-vous pour travailler?",
-                        "Combien de GB de mémoire RAM disposez-vous?",
-                        "Quel est votre niveau d'aisance avec git/github?"]]
-   
-    df_clean.columns = ['Horodateur', 'Nom', 'Prénom', 'Adresse_Mail' ]+\
-                        [y for x in range(number_of_vows)for y in [f'Choix{x}',f'Raison_Choix{x}']]+\
-                   ['OS','Memoire','Github']
-    #filtre adresse mail
+    if num_column_os:
+        df_clean_res.loc[:,'OS'] = df_clean.loc[:,df_clean.columns[num_column_os]]
+    if num_column_ram:
+        df_clean_res.loc[:,'Memoire'] = df_clean.loc[:,df_clean.columns[num_column_ram]]
+    if num_column_github:
+        df_clean_res.loc[:,'Github'] = df_clean.loc[:,df_clean.columns[num_column_github]]
+    #filter email adress
     if list_mails: 
         print("Filtre activé")
-        df_clean=df_clean[df_clean['Adresse_Mail'].isin(list_mails)]
-    return df_clean
+        df_clean_res=df_clean_res[df_clean_res['Adresse_Mail'].isin(list_mails)]
+    return df_clean_res
 
 def projects_ranking(df,list_projects, 
                      method_class1=len,method_class2= lambda x : random.random()):
@@ -67,11 +76,12 @@ def update_matchings(student, choice,matchings,rankings):
 #be careful : inputs are modified 
 def stable_matching_algorithm_unbalanced_class(student_vows, rankings, places):
     ##deep copy so as not to transform inputs !!
-    students =  {key: value[:] for key, value in student_vows.items()}
+    #+remonving projects int the students vows of there is no places allowed for it
+    students =  {key: [proj for proj in value if places[proj]]for key, value in student_vows.items()}
     #initially all the students are waiting to be assign to a project
     waiting_list = [applicants for applicants in students]
-    #initially all the projects are empty
-    matchings = {choice: [] for choice in places}
+    #initially all the projects are empty (removing those without places allowed)
+    matchings = {choice: [] for choice,nb_places in places.items() if nb_places }
 
     while waiting_list:
         for applicant in waiting_list.copy():
@@ -91,7 +101,7 @@ def stable_matching_algorithm_unbalanced_class(student_vows, rankings, places):
                     matchings[choice] = update_matchings(applicant, choice,matchings,rankings)
                     waiting_list = remove_student_from_waiting_list(applicant,waiting_list)
                     waiting_list.append(matchings[choice].pop())
-    print(waiting_list)
+   # print(waiting_list)
     return matchings
 
 def evaluate_satisfaction(students_vows,stable_matching_results):
