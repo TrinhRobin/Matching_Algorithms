@@ -1,5 +1,5 @@
 import streamlit as st 
-from util import cleaning_dataset,cleaning_dataset_int, projects_ranking,projects_ranking_v2,length_without_stopwords,vader_sentiment_fr, stable_matching_algorithm_unbalanced_class,evaluate_satisfaction
+from util import cleaning_dataset,cleaning_dataset_int, projects_ranking,length_without_stopwords,vader_sentiment_fr, stable_matching_algorithm_unbalanced_class,evaluate_satisfaction
 import random
 import pandas as pd
 import numpy as np

@@ -66,21 +66,6 @@ def cleaning_dataset_int(df,list_mails=[]):
         df_clean_res=df_clean_res[df_clean_res['Adresse_Mail'].isin(list_mails)]
     return df_clean_res
 
-def projects_ranking(df,list_projects, 
-                     method_class1=len,method_class2= lambda x : random.random()):
-    #A mettre en paramètre ? avec webscrapping
-    list_all_students  = set([ x[0] +"_"+x[1] for x in df.loc[:,["Nom","Prénom"]].values])
-    number_of_vows = len(re.findall(r"Choix[0-9]{1}", ' '.join(list(df.columns) )))//2
-    for i in range(number_of_vows):
-        df[f'score{i}']=df[f"Raison_Choix{i}"].apply(lambda x : method_class1(x))
-    
-    
-    vows_projects = {project :[ x[0]+'_'+x[1] 
-          for i in range(  number_of_vows) for x in df.loc[df[f"Choix{i}"]==project,].sort_values(by=f'score{i}',ascending=False).loc[:,["Nom","Prénom"]].values
-                     ]
-                     for project in  list_projects}
-    return({ project : fill_all_student_projects(vows_projects[project], list_all_students,method_class2) for project in vows_projects})
-
 def vader_sentiment_fr(sentence):
     """
     sentence : str , a string value explaining a vow
@@ -100,15 +85,14 @@ def length_without_stopwords(sentence):
     sentence_without_stopwords = ' '.join([word.lower() for word in sentence.split() if word.lower() not in set(stopwords.words('french'))])
     return len(sentence_without_stopwords)
 
-def projects_ranking_v2(df,list_projects, 
+def projects_ranking(df,list_projects, 
                      method_class1=len,method_class2= lambda x : random.random()):
     #A mettre en paramètre ? avec webscrapping
     list_all_students  = set([ x[0] +"_"+x[1] for x in df.loc[:,["Nom","Prénom"]].values])
     number_of_vows = len(re.findall(r"Choix[0-9]{1}", ' '.join(list(df.columns) )))//2
     for i in range(number_of_vows):
         df[f'score{i}']=df.apply(lambda x : method_class1(x[f"Raison_Choix{i}"]),axis=1)
-    
-    
+
     vows_projects = {project :[ x[0]+'_'+x[1] 
           for i in range(  number_of_vows) for x in df.loc[df[f"Choix{i}"]==project,].sort_values(by=f'score{i}',ascending=False).loc[:,["Nom","Prénom"]].values
                      ]
