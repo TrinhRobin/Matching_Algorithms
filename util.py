@@ -2,6 +2,9 @@ import random
 import pandas as pd
 import numpy as np
 import re
+from nltk.corpus import stopwords
+from vaderSentiment_fr.vaderSentiment import SentimentIntensityAnalyzer
+#pip3 list | findstr nltk  
 def fill_all_student_projects(list_students_projects,
                               list_all_students,
                               method_ranking ):
@@ -77,7 +80,42 @@ def projects_ranking(df,list_projects,
                      ]
                      for project in  list_projects}
     return({ project : fill_all_student_projects(vows_projects[project], list_all_students,method_class2) for project in vows_projects})
+
+def vader_sentiment_fr(sentence):
+    """
+    sentence : str , a string value explaining a vow
+    Output : Filtering the stopwords inside this sentence and using a Sentiment Analysis model, VaderSentiment to compute a positivity score
+    https://pypi.org/project/vaderSentiment-fr/
     
+    """
+    sentence_without_stopwords = ' '.join([word.lower() for word in sentence.split() if word.lower() not in set(stopwords.words('french'))])
+    return SentimentIntensityAnalyzer().polarity_scores(sentence_without_stopwords)['compound']
+    
+def length_without_stopwords(sentence):
+    """
+    sentence : str , a string value explaining a vow
+    Output : Filtering the stopwords inside this sentence and returns its new length
+    
+    """
+    sentence_without_stopwords = ' '.join([word.lower() for word in sentence.split() if word.lower() not in set(stopwords.words('french'))])
+    return len(sentence_without_stopwords)
+
+def projects_ranking_v2(df,list_projects, 
+                     method_class1=len,method_class2= lambda x : random.random()):
+    #A mettre en paramètre ? avec webscrapping
+    list_all_students  = set([ x[0] +"_"+x[1] for x in df.loc[:,["Nom","Prénom"]].values])
+    number_of_vows = len(re.findall(r"Choix[0-9]{1}", ' '.join(list(df.columns) )))//2
+    for i in range(number_of_vows):
+        df[f'score{i}']=df.apply(lambda x : method_class1(x[f"Raison_Choix{i}"]),axis=1)
+    
+    
+    vows_projects = {project :[ x[0]+'_'+x[1] 
+          for i in range(  number_of_vows) for x in df.loc[df[f"Choix{i}"]==project,].sort_values(by=f'score{i}',ascending=False).loc[:,["Nom","Prénom"]].values
+                     ]
+                     for project in  list_projects}
+    return({ project : fill_all_student_projects(vows_projects[project], list_all_students,method_class2) for project in vows_projects})
+
+
 def remove_student_from_waiting_list(applicant,waiting_list):
     """
     Creating a new list of the waiting_list's keys without the key applicant

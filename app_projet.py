@@ -1,5 +1,5 @@
 import streamlit as st 
-from util import cleaning_dataset,projects_ranking,stable_matching_algorithm_unbalanced_class,evaluate_satisfaction
+from util import cleaning_dataset,cleaning_dataset_int, projects_ranking,projects_ranking_v2,length_without_stopwords,vader_sentiment_fr, stable_matching_algorithm_unbalanced_class,evaluate_satisfaction
 import random
 import pandas as pd
 import numpy as np
@@ -9,7 +9,9 @@ import re
 st.title("Projects Attribution")
 st.header("Based on mariage lemma")
 
-uploaded_file = st.file_uploader("please drag and drop the csv file here :",type='csv')
+options_lang = ["Français","English"]
+langague_vows = st.selectbox("Please select a language :",options_lang )
+uploaded_file = st.file_uploader("Please drag and drop the csv file here :",type='csv')
 if uploaded_file is not None:
     # To read file as bytes:
     #bytes_data = uploaded_file.getvalue()
@@ -25,6 +27,7 @@ if uploaded_file is not None:
 
     # Can be used wherever a "file-like" object is accepted:
     st.write("Check that the csv file is well imported:")
+    st.success('This is a success message!', icon="✅")
     df = pd.read_csv(uploaded_file)
     st.write(df.head())
 
@@ -32,7 +35,14 @@ if uploaded_file is not None:
 
     email_list = st.text_input("Do you want to apply a filter based on email adresses?")
     st.write(email_list )
-    df_clean = cleaning_dataset(df)
+
+    if langague_vows == options_lang[0]:
+        df_clean = cleaning_dataset(df)
+        
+    if langague_vows == options_lang[1]:
+        df_clean = cleaning_dataset_int(df)
+
+    st.success('This is a success message!', icon="🤖")
     number_of_vows = len(re.findall(r"Choix[0-9]{1}", ' '.join(list(df_clean.columns) )))//2
     st.write("The students' names are :")
     st.write(df_clean[["Nom","Prénom"]].reset_index(drop=True))
@@ -50,9 +60,18 @@ if uploaded_file is not None:
   
     student_vows = {df_clean.loc[i,"Nom"]+'_'+df_clean.loc[i,"Prénom"]: [df_clean.loc[i,f'Choix{j}'] for j in range(number_of_vows) ] for i in df_clean.index}
 
-    
+    option_method_ranking = [r"Length (Vanilla)",r"Length Without Stopwords (Kinda Efficient but Lame)",r"Sentiment Analysis (Bêta+Where's the fun?)",r"Random Dictatorship (Strategy-proof + Pareto-efficient+ Neutral + Based)"]
+    method_ranking  = st.selectbox("Choose a metric for evaluating the students' reasons : ",option_method_ranking  )
+    if method_ranking== option_method_ranking [0]:
+        vows_projects=projects_ranking(df=df_clean,list_projects=unique_projects,method_class1=len)
+    if method_ranking== option_method_ranking [1]:
+        vows_projects=projects_ranking(df=df_clean,list_projects=unique_projects,method_class1=length_without_stopwords)
+    if method_ranking== option_method_ranking [2]:
+        vows_projects=projects_ranking(df=df_clean,list_projects=unique_projects,method_class1=vader_sentiment_fr)
+    if method_ranking== option_method_ranking [3]:
+        vows_projects=projects_ranking(df=df_clean,list_projects=unique_projects,method_class1=lambda x : random.random())
     st.write( "Those are the student' vows:",student_vows)
-    vows_projects=projects_ranking(df_clean,unique_projects)
+    
     st.write("And on the opposite side, the projects' vows:",vows_projects)
 
     st.write("The possible places for each project is",places) 
