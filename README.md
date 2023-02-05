@@ -16,3 +16,11 @@ A sample project for implementing the main algorithms based on [Hall's marriage 
 - https://github.com/QuantEcon/MatchingMarkets.py
 
 - https://youtu.be/FhRf0j068ZA
+
+## More Specifically about our lord and Saviour : Random Dictatorship :
+
+- https://www.jstor.org/stable/2998580
+
+- https://web.stanford.edu/~niederle/HouseAllocation.pdf
+
+- https://en.wikipedia.org/wiki/Dictatorship_mechanism
