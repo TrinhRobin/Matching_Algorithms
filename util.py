@@ -42,6 +42,26 @@ def cleaning_dataset(df,list_mails=[]):
         print("Filtre activé")
         df_clean_res=df_clean_res[df_clean_res['Adresse_Mail'].isin(list_mails)]
     return df_clean_res
+#Adapting the preceeding function for english columns' names :
+
+def cleaning_dataset_int(df,list_mails=[]):
+    df_clean =df.drop_duplicates(subset=['Family Name','First Name'],keep='last')
+    #Dropping out the rows without name/surname/email adresses 
+    df_clean =  df_clean.dropna(subset=['Family Name','First Name','Email'])
+    #using regex to find number of vows :
+    number_of_vows = len(re.findall(r"why you choose this topic:[\.0-9]{0,2}", ' '.join(list(df_clean.columns) )))
+    print( number_of_vows )
+    #Wrong formating so that i neeed to reorder that :(
+    df_clean_res = df_clean[list(df_clean.columns[:(3+2*number_of_vows+1)])]
+    ##Filling out Empty Projects/reasons :
+    df_clean_res=df_clean_res.fillna("No") 
+    df_clean_res.columns = ['Horodateur', 'Nom', 'Prénom', 'Adresse_Mail' ]+\
+                        [y for x in range(number_of_vows)for y in [f'Choix{x}',f'Raison_Choix{x}']]
+    #filter email adress
+    if list_mails: 
+        print("Filtering the Mails...")
+        df_clean_res=df_clean_res[df_clean_res['Adresse_Mail'].isin(list_mails)]
+    return df_clean_res
 
 def projects_ranking(df,list_projects, 
                      method_class1=len,method_class2= lambda x : random.random()):
