@@ -17,7 +17,7 @@ A sample project for implementing the main algorithms based on [Hall's marriage 
 
 - https://youtu.be/FhRf0j068ZA
 
-## More Specifically about our lord and Saviour : Random Dictatorship :
+## More Specifically about Random Dictatorship :
 
 - https://www.jstor.org/stable/2998580
 
