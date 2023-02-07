@@ -2,6 +2,9 @@ import random
 import pandas as pd
 import numpy as np
 import re
+#Loading Stopwords
+import nltk
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 from vaderSentiment_fr.vaderSentiment import SentimentIntensityAnalyzer
 #pip3 list | findstr nltk  
