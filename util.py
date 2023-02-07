@@ -22,8 +22,9 @@ def fill_all_projects(student_vows,
 
 def cleaning_dataset(df,list_mails=[]):
     df_clean =df.drop_duplicates(subset=['Nom','Prénom'],keep='last')
-    #Dropping out the rows without name/surname/email adresses 
-    df_clean =  df_clean.dropna(subset=['Nom','Prénom','Adresse Mail'])
+    #Dropping out the rows without name/surname/email adresses : Columns names must contain Mail (like Adresse Email or Mail )
+   
+    df_clean =  df_clean.dropna(subset=['Nom','Prénom']+[x for x in df_clean.columns if 'Mail' in x])
     #using regex to find number of vows :
     number_of_vows = len(re.findall(r"Donnez votre [a-z\é\è\à\ù]{1,15} choix de projet", ' '.join(list(df_clean.columns) )))
     #Wrong formating so that i neeed to reorder that :(
