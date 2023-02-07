@@ -60,7 +60,7 @@ if uploaded_file is not None:
   
     student_vows = {df_clean.loc[i,"Nom"]+'_'+df_clean.loc[i,"Prénom"]: [df_clean.loc[i,f'Choix{j}'] for j in range(number_of_vows) ] for i in df_clean.index}
 
-    option_method_ranking = [r"Length (Vanilla)",r"Length Without Stopwords (Kinda Efficient but Lame)",r"Sentiment Analysis (Bêta+Where's the fun?)",r"Random Dictatorship (Strategy-proof + Pareto-efficient+ Neutral + Based)"]
+    option_method_ranking = [r"Length (Vanilla)",r"Length Without Stopwords ",r"Sentiment Analysis (Bêta)",r"Random Dictatorship (Strategy-proof + Pareto-efficient+ Neutral)"]
     method_ranking  = st.selectbox("Choose a metric for evaluating the students' reasons : ",option_method_ranking  )
     if method_ranking== option_method_ranking [0]:
         vows_projects=projects_ranking(df=df_clean,list_projects=unique_projects,method_class1=len)
