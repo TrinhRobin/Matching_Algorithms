@@ -41,7 +41,7 @@ if uploaded_file is not None:
         
     if langague_vows == options_lang[1]:
         df_clean = cleaning_dataset_int(df)
-    if langague_vows == options_lang[1]:
+    if langague_vows == options_lang[2]:
         df_clean = cleaning_dataset_b2b(df)
 
     st.success('This is a success message!', icon="🤖")
