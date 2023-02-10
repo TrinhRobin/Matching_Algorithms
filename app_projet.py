@@ -1,5 +1,5 @@
 import streamlit as st 
-from util import cleaning_dataset,cleaning_dataset_int, projects_ranking,length_without_stopwords,vader_sentiment_fr, stable_matching_algorithm_unbalanced_class,evaluate_satisfaction
+from util import cleaning_dataset,cleaning_dataset_int,cleaning_dataset_b2b, projects_ranking,length_without_stopwords,vader_sentiment_fr, stable_matching_algorithm_unbalanced_class,evaluate_satisfaction
 import random
 import pandas as pd
 import numpy as np
@@ -9,8 +9,8 @@ import re
 st.title("Projects Attribution")
 st.header("Based on mariage lemma")
 
-options_lang = ["Français","English"]
-langague_vows = st.selectbox("Please select a language :",options_lang )
+options_lang = ["Français","English","B2B"]
+langague_vows = st.selectbox("Please select a language/promotion:",options_lang )
 uploaded_file = st.file_uploader("Please drag and drop the csv file here :",type='csv')
 if uploaded_file is not None:
     # To read file as bytes:
@@ -41,6 +41,8 @@ if uploaded_file is not None:
         
     if langague_vows == options_lang[1]:
         df_clean = cleaning_dataset_int(df)
+    if langague_vows == options_lang[1]:
+        df_clean = cleaning_dataset_b2b(df)
 
     st.success('This is a success message!', icon="🤖")
     number_of_vows = len(re.findall(r"Choix[0-9]{1}", ' '.join(list(df_clean.columns) )))//2

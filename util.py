@@ -34,16 +34,16 @@ def cleaning_dataset(df,list_mails=[]):
     df_clean_res.columns = ['Horodateur', 'Nom', 'Prénom', 'Adresse_Mail' ]+\
                         [y for x in range(number_of_vows)for y in [f'Choix{x}',f'Raison_Choix{x}']]
     #using regex to dteect if theses keywords are in the columns : 
-    num_column_github = [i for i,x in enumerate(list(df_clean.columns)) if re.search('github',x)][0]
-    num_column_os = [i for i,x in enumerate(list(df_clean.columns)) if re.search("système d'exploitation",x)][0]
-    num_column_ram= [i for i,x in enumerate(list(df_clean.columns)) if re.search('RAM',x)][0]
+    num_column_github = [i for i,x in enumerate(list(df_clean.columns)) if re.search('github',x)]
+    num_column_os = [i for i,x in enumerate(list(df_clean.columns)) if re.search("système d'exploitation",x)]
+    num_column_ram= [i for i,x in enumerate(list(df_clean.columns)) if re.search('RAM',x)]
     
     if num_column_os:
-        df_clean_res.loc[:,'OS'] = df_clean.loc[:,df_clean.columns[num_column_os]]
+        df_clean_res.loc[:,'OS'] = df_clean.loc[:,df_clean.columns[num_column_os[0]]]
     if num_column_ram:
-        df_clean_res.loc[:,'Memoire'] = df_clean.loc[:,df_clean.columns[num_column_ram]]
+        df_clean_res.loc[:,'Memoire'] = df_clean.loc[:,df_clean.columns[num_column_ram[0]]]
     if num_column_github:
-        df_clean_res.loc[:,'Github'] = df_clean.loc[:,df_clean.columns[num_column_github]]
+        df_clean_res.loc[:,'Github'] = df_clean.loc[:,df_clean.columns[num_column_github[0]]]
     #filter email adress
     if list_mails: 
         print("Filtre activé")
@@ -67,6 +67,24 @@ def cleaning_dataset_int(df,list_mails=[]):
     #filter email adress
     if list_mails: 
         print("Filtering the Mails...")
+        df_clean_res=df_clean_res[df_clean_res['Adresse_Mail'].isin(list_mails)]
+    return df_clean_res
+
+def cleaning_dataset_b2b(df,list_mails=[]):
+    df_clean =df.drop_duplicates(subset=['Nom','Prénom'],keep='last')
+    #Dropping out the rows without name/surname/email adresses : Columns names must contain Mail (like Adresse Email or Mail )
+    df_clean =  df_clean.dropna(subset=['Nom','Prénom']+[x for x in df_clean.columns if 'Mail' in x])
+    #using regex to find number of vows :
+    number_of_vows = len(re.findall(r"motivations pour votre choix [0-9]{1,2}", ' '.join(list(df_clean.columns) )))
+    #Wrong formating so that i neeed to reorder that :(
+    df_clean_res = df_clean[list(df_clean.columns[:(3+2*number_of_vows)])]
+    ##Filling out Empty Projects/reasons :
+    df_clean_res=df_clean_res.fillna("No") 
+    df_clean_res.columns = ['Nom', 'Prénom', 'Adresse_Mail' ]+\
+                        [y for x in range(number_of_vows)for y in [f'Choix{x}',f'Raison_Choix{x}']]
+    
+    if list_mails: 
+        print("Filtre activé")
         df_clean_res=df_clean_res[df_clean_res['Adresse_Mail'].isin(list_mails)]
     return df_clean_res
 
